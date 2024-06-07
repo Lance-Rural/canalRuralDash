@@ -1,38 +1,52 @@
 import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+
+import {
   BriefcaseIcon,
   CalendarIcon,
   CheckIcon,
   CurrencyDollarIcon,
   MapPinIcon,
-  PhoneIcon,
   VideoCameraIcon,
 } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
 import VideoPlayer from "@/videojs/video";
 import { useEffect, useState } from "react";
 import { streaming } from "../../../services/stream";
-import dayjs from "dayjs";
-import duration from 'dayjs/plugin/duration'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-dayjs.extend(duration)
-
 export default function Transmissoes() {
   const [streamingList, setStreamingList] = useState([]);
+  const [streamingListCounter, setStreamingListCounter] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
-    async function list() {
+
+    async function listCounter() {
+      await streaming.get("/alright/rest/v2/broadcasts/count").then((res) => {
+        const responseTotalCounter = res.data.number.toString();
+        setStreamingListCounter(responseTotalCounter);
+        list(responseTotalCounter);
+      });
+    }
+
+    async function list(total) {
       await streaming
-        .get("/alright/rest/v2/broadcasts/list/0/10")
+        .get(`/alright/rest/v2/broadcasts/list/0/${total}`)
         .then((res) => {
-          // console.log(res.data);
-          setIsLoading(false);
           setStreamingList(res.data);
+          setIsLoading(false);
         })
         .catch((error) => {
           console.log(error);
@@ -41,15 +55,14 @@ export default function Transmissoes() {
     }
 
     setInterval(() => {
-      list();
-    }, [1000]);
+      listCounter();
+    }, [2000]);
 
-    // list();
+    listCounter();
   }, []);
 
-  function formatDate(e) {
-    // console.log(e)
-    return 1;
+  function openModal() {
+    setOpenDialog(!openDialog);
   }
 
   return (
@@ -66,7 +79,7 @@ export default function Transmissoes() {
                   className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-500"
                   aria-hidden="true"
                 />
-                {streamingList && streamingList.length} sinais de entrada
+                {streamingListCounter && streamingListCounter} sinais de entrada
               </div>
               <div className="mt-2 flex items-center text-sm text-gray-300">
                 <MapPinIcon
@@ -92,10 +105,11 @@ export default function Transmissoes() {
             </div>
           </div>
           <div className="mt-5 flex lg:ml-4 lg:mt-0">
-            <span className="">
+            <span>
               <button
-                type="button"
-                className="inline-flex items-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                type="submit"
+                onClick={openModal}
+                className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
               >
                 <CheckIcon
                   className="-ml-0.5 mr-1.5 h-5 w-5"
@@ -112,6 +126,8 @@ export default function Transmissoes() {
         className="mx-auto max-w-2xl lg:max-w-7xl "
         aria-labelledby="manager-streaming-page"
       >
+        {openDialog ? <DialogNewEvent /> : <></>}
+
         {isLoading ? (
           <h1 className="text-white">loading...</h1>
         ) : (
@@ -170,9 +186,14 @@ export default function Transmissoes() {
                           </dd>
 
                           <dt className="sr-only">Nome Canal</dt>
-                          <dd className="text-sm text-gray-500">
-                            Duração de : <span>{dayjs.duration(transmissao.duration).minutes()}</span>
-                          </dd>
+                          {/* <dd className="text-sm text-gray-500">
+                            Iniciado:{" "}
+                            <span>
+                              {getTime(transmissao.date)}
+
+                              {console.log(transmissao.date)}
+                            </span>
+                          </dd> */}
 
                           <dt className="sr-only">Nome Canal</dt>
                           <dd className="text-sm text-gray-500">
@@ -184,7 +205,7 @@ export default function Transmissoes() {
                         <div className="-mt-px flex divide-x divide-gray-200">
                           <div className="flex w-0 flex-1">
                             <Link
-                              href={`mailto:${transmissao.email}`}
+                              to={`/dashboard/transmissoes/${transmissao.streamId}`}
                               className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-3 text-sm font-semibold text-gray-900"
                             >
                               <VideoCameraIcon
@@ -207,5 +228,84 @@ export default function Transmissoes() {
 
       <footer aria-labelledby="footer-heading" className="bg-gray-50"></footer>
     </div>
+  );
+}
+
+export function DialogNewEvent(openDialog) {
+  console.log(openDialog);
+
+  const [open, setOpen] = useState(openDialog);
+
+  return (
+    <Transition show={open}>
+      <Dialog className="relative z-10" onClose={setOpen}>
+        <TransitionChild
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </TransitionChild>
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <TransitionChild
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <ExclamationTriangleIcon
+                      className="h-6 w-6 text-red-600"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                    <DialogTitle
+                      as="h3"
+                      className="text-base font-semibold leading-6 text-gray-900"
+                    >
+                      Deactivate account
+                    </DialogTitle>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to deactivate your account? All of
+                        your data will be permanently removed from our servers
+                        forever. This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 sm:ml-10 sm:mt-4 sm:flex sm:pl-4">
+                  <button
+                    type="button"
+                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:w-auto"
+                    onClick={() => setOpen(false)}
+                  >
+                    Criar
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:ml-3 sm:mt-0 sm:w-auto"
+                    onClick={() => setOpen(false)}
+                    data-autofocus
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
   );
 }

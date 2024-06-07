@@ -18,6 +18,8 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import crLogo from "../../assets/canalRural.svg";
+import crIcon from "../../assets/canalRuralIcon.webp";
 
 const navigation = [
   { name: "Dashboard", to: "/dashboard", icon: HomeIcon },
@@ -30,11 +32,6 @@ const navigation = [
   { name: "Programas", to: "Home", icon: FolderIcon },
   { name: "Usuários", to: "Home", icon: CalendarIcon },
   { name: "Reports", to: "Home", icon: ChartPieIcon },
-];
-const teams = [
-  { id: 1, name: "Heroicons", href: "#", initial: "H" },
-  { id: 2, name: "Tailwind Labs", href: "#", initial: "T" },
-  { id: 3, name: "Workcation", href: "#", initial: "W" },
 ];
 
 function classNames(...classes) {
@@ -100,9 +97,9 @@ export default function Dashboard() {
                   <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
                     <div className="flex h-16 shrink-0 items-center">
                       <img
-                        className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                        alt="Your Company"
+                        className="h-6 w-auto mt-4"
+                        src={crLogo}
+                        alt="Logo Canal Rural"
                       />
                     </div>
                     <nav className="flex flex-1 flex-col">
@@ -126,31 +123,6 @@ export default function Dashboard() {
                                   />
                                   {item.name}
                                 </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                        <li>
-                          <div className="text-xs font-semibold leading-6 text-gray-400">
-                            Your teams
-                          </div>
-                          <ul role="list" className="-mx-2 mt-2 space-y-1">
-                            {teams.map((team) => (
-                              <li key={team.name}>
-                                <a
-                                  href={team.href}
-                                  className={classNames(
-                                    team.current
-                                      ? "bg-gray-800 text-white"
-                                      : "text-gray-400 hover:text-white hover:bg-gray-800",
-                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                  )}
-                                >
-                                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                                    {team.initial}
-                                  </span>
-                                  <span className="truncate">{team.name}</span>
-                                </a>
                               </li>
                             ))}
                           </ul>
@@ -184,11 +156,19 @@ export default function Dashboard() {
                 "flex h-16 shrink-0 items-center "
               )}
             >
-              <img
-                className={classNames(setSidebarDesktopOpen ? "h-8" : "h-10")}
-                src="https://tailwindui.com/img/logos/mark.svg?color=green&shade=500"
-                alt="Canal Rural"
-              />
+              {sidebarDesktopOpen ? (
+                <img
+                  className={classNames(setSidebarDesktopOpen ? "h-6" : "h-5")}
+                  src={crLogo}
+                  alt="Logo Canal Rural"
+                />
+              ) : (
+                <img
+                  className={classNames(setSidebarDesktopOpen ? "h-7" : "h-7")}
+                  src={crIcon}
+                  alt="Logo Canal Rural"
+                />
+              )}
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -200,7 +180,7 @@ export default function Dashboard() {
                           to={item.to}
                           onClick={() => setSidebarName(item.name)}
                           className={classNames(
-                            item.to === location.pathname
+                            item.to == location.pathname
                               ? "bg-gray-800 text-white"
                               : "text-gray-400 hover:text-white hover:bg-gray-800",
                             sidebarDesktopOpen ? "" : "justify-center",
@@ -235,7 +215,10 @@ export default function Dashboard() {
                       alt=""
                     />
                     <span className="sr-only">Your profile</span>
-                    <span aria-hidden="true" className="">
+                    <span
+                      aria-hidden="true"
+                      className={classNames(sidebarDesktopOpen ? "" : "hidden")}
+                    >
                       Tom Cook
                     </span>
                   </a>

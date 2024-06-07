@@ -6,6 +6,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Dashboard/Home";
 import Transmissoes from "@/pages/Dashboard/Transmissoes";
+import DetalheTransmissao from "@/pages/Dashboard/Transmissoes/DetalheTransmissao";
 
 function RoutesApp() {
   return (
@@ -22,9 +23,8 @@ function RoutesApp() {
         }
       >
         <Route path="/dashboard/" element={<Home />} />
-        <Route path="/dashboard/transmissoes" element={<Transmissoes />}> 
-
-        </Route>
+        <Route path="/dashboard/transmissoes" element={<Transmissoes />} /> 
+        <Route path="/dashboard/transmissoes/:idTransmissao" element={<DetalheTransmissao />} /> 
       </Route>
     </Routes>
   );
