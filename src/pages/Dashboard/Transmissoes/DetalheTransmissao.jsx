@@ -24,7 +24,7 @@ import {
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 import { useParams, useNavigate } from "react-router-dom";
-import VideoPlayer from "@/videojs/video";
+import VideoPlayer from "@/videojs7/video";
 import { useEffect, useState } from "react";
 import { streaming } from "../../../services/stream";
 

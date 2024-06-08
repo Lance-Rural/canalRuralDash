@@ -9,16 +9,12 @@ import {
 } from "@headlessui/react";
 
 import {
-  BriefcaseIcon,
-  CalendarIcon,
   CheckIcon,
-  CurrencyDollarIcon,
-  MapPinIcon,
   VideoCameraIcon,
 } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
-import VideoPlayer from "@/videojs/video";
-import { useCallback, useEffect, useState } from "react";
+import VideoPlayer from "@/videojs7/video";
+import { useEffect, useState } from "react";
 import { streaming } from "../../../services/stream";
 
 import { useForm } from "react-hook-form";
@@ -41,7 +37,6 @@ const addNewEvent = yup.object({
 
 export default function Transmissoes() {
   const [streamingList, setStreamingList] = useState([]);
-  const [streamingListFiltered, setStreamingListFiltered] = useState([]);
   const [streamingListCounter, setStreamingListCounter] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,20 +69,7 @@ export default function Transmissoes() {
     listCounter();
   }, []);
 
-  function filtroCanal() {
-    console.log(radioSelected);
-
-    const result = streamingList.filter(
-      (trans) => trans.category === radioSelected
-    );
-
-    if (result) {
-      setStreamingListFiltered(result);
-    }
-
-    console.log(result);
-    console.log(streamingListFiltered);
-  }
+  
 
   function openModal() {
     setOpenDialog(!openDialog);
@@ -205,7 +187,7 @@ export default function Transmissoes() {
             {streamingList && (
               <ul
                 role="list"
-                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-3"
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 mt-3"
               >
                 {streamingList.map((transmissao) => (
                   <li
