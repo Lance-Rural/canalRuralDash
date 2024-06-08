@@ -67,6 +67,12 @@ export default function Transmissoes() {
     }
 
     listCounter();
+
+    setInterval(() => {
+      listCounter();
+    }, [2000]);
+
+
   }, []);
 
   
