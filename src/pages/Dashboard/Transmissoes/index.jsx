@@ -8,10 +8,7 @@ import {
   RadioGroup,
 } from "@headlessui/react";
 
-import {
-  CheckIcon,
-  VideoCameraIcon,
-} from "@heroicons/react/20/solid";
+import { CheckIcon, VideoCameraIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
 import VideoPlayer from "@/videojs7/video";
 import { useEffect, useState } from "react";
@@ -33,6 +30,7 @@ function classNames(...classes) {
 const addNewEvent = yup.object({
   name: yup.string().required("É necessário um nome para o evento."),
   description: yup.string().required("Adicione uma breve descrição."),
+  streamId: yup.string(),
 });
 
 export default function Transmissoes() {
@@ -74,8 +72,6 @@ export default function Transmissoes() {
 
 
   }, []);
-
-  
 
   function openModal() {
     setOpenDialog(!openDialog);
@@ -181,9 +177,7 @@ export default function Transmissoes() {
         </div>
       </header>
 
-      <main
-        aria-labelledby="manager-streaming-page"
-      >
+      <main aria-labelledby="manager-streaming-page">
         {openDialog ? <DialogNewEvent /> : <></>}
 
         {isLoading ? (
@@ -319,7 +313,10 @@ export function DialogNewEvent(openDialog) {
       type: "liveStream",
       category: radioSelected,
       publishType: "RTMP",
+      streamId: getValues("streamId")
     };
+
+    console.log(data);
 
     await streaming
       .post(`/alright/rest/v2/broadcasts/create`, data)
@@ -382,39 +379,6 @@ export function DialogNewEvent(openDialog) {
                     onSubmit={handleSubmit(handleNewEvent)}
                   >
                     <div>
-                      <input
-                        autoComplete="name"
-                        className="relative block w-full rounded-md h-10 border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-crBlue-200 sm:text-sm sm:leading-6"
-                        placeholder="Digite um nome para o evento"
-                        {...register("name", {
-                          required: true,
-                        })}
-                      />
-                      {errors.name && (
-                        <p className="text-xs mt-2 text-red-400 ">
-                          {errors.name.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <textarea
-                        autoComplete="description"
-                        rows={10}
-                        className="relative block w-full rounded-md h-24 border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-crBlue-200 sm:text-sm sm:leading-6"
-                        placeholder="Digite uma breve descrição sobre o evento"
-                        {...register("description", {
-                          required: true,
-                        })}
-                      />
-                      {errors.description && (
-                        <p className="text-xs mt-2 text-red-400 ">
-                          {errors.description.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
                       <RadioGroup
                         value={radioSelected}
                         onChange={setRadioSelected}
@@ -473,6 +437,99 @@ export function DialogNewEvent(openDialog) {
                       </RadioGroup>
                     </div>
 
+                    <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                      <div className="sm:col-span-6">
+                        <label
+                          htmlFor="username"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
+                          Nome do evento
+                        </label>
+                        <div className="mt-2">
+                          <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-gray-600 ">
+                            <input
+                              type="text"
+                              name="name"
+                              id="name"
+                              autoComplete="name"
+                              placeholder="* obrigatório"
+                              className="inline flex-1 border-1 border-gray-200 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 placeholder:text-xs focus:ring-0 sm:text-sm sm:leading-6"
+                              {...register("name", {
+                                required: true,
+                              })}
+                            />
+                          </div>
+                          {errors.name && (
+                              <p className="text-xs mt-2 text-red-400 ">
+                                {errors.name.message}
+                              </p>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-span-full">
+                      <label
+                        htmlFor="about"
+                        className="block text-sm font-medium leading-6 text-gray-900"
+                      >
+                        Descrição
+                      </label>
+                      <div className="mt-2">
+                        <textarea
+                          id="about"
+                          name="about"
+                          rows={3}
+                          className="block w-full rounded-md border-1.5 border-gray-200  py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 placeholder:text-xs focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
+                          defaultValue={""}
+                          placeholder="* Obrigatório o preenchimento"
+                          {...register("description", {
+                            required: true,
+                          })}
+                        />
+                      </div>
+                      {errors.description && errors.description ? (
+                        <p className="text-xs mt-2 text-red-400 ">
+                          {errors.description.message}
+                        </p>
+                      ) : (
+                        <p className="mt-3 text-sm leading-6 text-gray-600">
+                        Escreva uma breve descrição sobre o evento.
+                      </p>
+                      )}
+                    </div>
+
+                    <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                      <div className="sm:col-span-6">
+                        <label
+                          htmlFor="username"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
+                          StreamID
+                        </label>
+                        <div className="mt-2">
+                          <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-gray-600 ">
+                            <input
+                              type="text"
+                              name="streamId"
+                              id="streamId"
+                              autoComplete="streamId"
+                              placeholder="Seu preenchimento é opcional"
+                              className="inline flex-1 border-1 border-gray-200 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 placeholder:text-xs focus:ring-0 sm:text-sm sm:leading-6"
+                              {...register("streamId", {
+                                required: true,
+                              })}
+                            />
+                          </div>
+                          {errors.name && (
+                              <p className="text-xs mt-2 text-red-400 ">
+                                {errors.name.message}
+                              </p>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex gap-2">
                       <button
                         type="submit"
@@ -480,14 +537,6 @@ export function DialogNewEvent(openDialog) {
                         data-autofocus
                       >
                         Adicionar
-                      </button>
-
-                      <button
-                        type="submit"
-                        className="inline-flex justify-center rounded-md bg-red-600 px-5 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-500 w-2/12"
-                        data-autofocus
-                      >
-                        Cancelar
                       </button>
                     </div>
                   </form>

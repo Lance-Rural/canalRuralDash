@@ -36,19 +36,18 @@ import { toast } from "react-toastify";
 import { formatDistance } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
 
+import cr from "@/assets/canalRuralColored.svg";
+import cc from "@/assets/canalDoCriador.svg";
+import lr from "@/assets/lanceRural.svg";
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-const providers = [
-  { name: "Facebook", value: "Provider-Facebook" },
-  { name: "Youtube", value: "Provider-Youtube" },
-  { name: "Custom", value: "Provider-Custom" },
-];
-
 const addEndPoint = yup.object({
   urlServidor: yup.string().required("Informe um servidor."),
-  endpointId: yup.string().required("Adicionar uma streamkey"),
+  streamKey: yup.string().required("Adicionar uma streamkey"),
+  endpointId: yup.string().required("Adicione um nome para a retransmissão"),
 });
 
 export default function DetalheTransmissao() {
@@ -108,7 +107,7 @@ export default function DetalheTransmissao() {
             locale: ptBR,
             includeSeconds: true,
           });
-
+          
           setDadosTransmissoes([
             {
               urlStream: "URL Stream",
@@ -120,7 +119,7 @@ export default function DetalheTransmissao() {
             },
             {
               urlStream: "Iniciado em",
-              rtmpCampo: formatDate,
+              rtmpCampo: res.data.status !== 'broadcasting' ? 'Transmissão não iniciada' : formatDate,
             },
           ]);
 
@@ -155,13 +154,13 @@ export default function DetalheTransmissao() {
 
   async function handleNewStream() {
     if (mem === "") {
-      toast.error("Selecione um provedor");
+      toast.error("Selecione um canal");
       return;
     }
 
     const dataEndpoint = {
       endpointServiceId: mem + " " + getValues("endpointId"),
-      rtmpUrl: getValues("urlServidor") + getValues("endpointId"),
+      rtmpUrl: getValues("urlServidor") + "/" + getValues("streamKey"),
     };
 
     console.log(idTransmissao);
@@ -190,15 +189,13 @@ export default function DetalheTransmissao() {
       });
   }
 
-  async function handleDeleteStream(){
+  async function handleDeleteStream() {
     await streaming
-      .delete(
-        `/alright/rest/v2/broadcasts/${idTransmissao}`
-      )
+      .delete(`/alright/rest/v2/broadcasts/${idTransmissao}`)
       .then((res) => {
         if (res.status === 200) {
           toast.success("Evento excluido com sucesso");
-          navigate('/dashboard/transmissoes')
+          navigate("/dashboard/transmissoes");
         }
       });
   }
@@ -601,58 +598,154 @@ export default function DetalheTransmissao() {
                                       onChange={setMem}
                                       className="my-2 grid grid-cols-1 gap-3 sm:grid-cols-3"
                                     >
-                                      {providers.map((provider) => (
-                                        <Radio
-                                          key={provider.name}
-                                          value={provider.value}
-                                          className={({ focus, checked }) =>
-                                            classNames(
-                                              focus
-                                                ? "ring-2 ring-green-600 ring-offset-2"
-                                                : "",
-                                              checked
-                                                ? "bg-blue-600 text-white hover:bg-blue-500"
-                                                : "ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50",
-                                              "flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold uppercase sm:flex-1 cursor-pointer"
-                                            )
-                                          }
-                                        >
-                                          {provider.name}
-                                        </Radio>
-                                      ))}
+                                      <Radio
+                                        value="Provider-Youtube"
+                                        className={({ focus, checked }) =>
+                                          classNames(
+                                            focus
+                                              ? "ring-2 ring-green-600 ring-offset-2"
+                                              : "",
+                                            checked
+                                              ? "bg-green-100 text-gray-900 hover:bg-green-200"
+                                              : "ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50",
+                                            "flex items-center justify-center rounded-md text-xs py-3 font-semibold text-center sm:flex-1 cursor-pointer"
+                                          )
+                                        }
+                                      >
+                                        <SocialIcon network="youtube" bgColor="black"/>
+                                      </Radio>
+
+                                      <Radio
+                                        value="Provider-Facebook"
+                                        className={({ focus, checked }) =>
+                                          classNames(
+                                            focus
+                                              ? "ring-2 ring-green-600 ring-offset-2"
+                                              : "",
+                                            checked
+                                              ? "bg-green-100 text-gray-900 hover:bg-green-200"
+                                              : "ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50",
+                                            "flex items-center justify-center rounded-md font-semibold text-center sm:flex-1 cursor-pointer"
+                                          )
+                                        }
+                                      >
+                                        <SocialIcon
+                                          network="facebook"
+                                          bgColor="black"
+
+                                        />
+                                      </Radio>
+
+                                      <Radio
+                                        value="Provider-Custom"
+                                        className={({ focus, checked }) =>
+                                          classNames(
+                                            focus
+                                              ? "ring-2 ring-green-600 ring-offset-2"
+                                              : "",
+                                            checked
+                                              ? "bg-green-100 text-gray-900 hover:bg-green-200"
+                                              : "ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50",
+                                            "flex items-center justify-center rounded-md text-lg py-3 font-semibold text-center sm:flex-1 cursor-pointer"
+                                          )
+                                        }
+                                      >
+                                        Custom
+                                      </Radio>
                                     </RadioGroup>
 
-                                    <div>
-                                      <input
-                                        autoComplete="urlServidor"
-                                        className="relative block w-full rounded-md h-10 border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-crBlue-200 sm:text-sm sm:leading-6"
-                                        placeholder="URL Servidor"
-                                        {...register("urlServidor", {
-                                          required: true,
-                                        })}
-                                      />
-                                      {errors.urlServidor && (
-                                        <p className="text-xs mt-2 text-red-400 ">
-                                          {errors.urlServidor.message}
-                                        </p>
-                                      )}
+                                    <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                                      <div className="sm:col-span-6">
+                                        <label
+                                          htmlFor="username"
+                                          className="block text-sm font-medium leading-6 text-gray-900"
+                                        >
+                                          Identificação da retransmissão
+                                        </label>
+                                        <div className="mt-2">
+                                          <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-gray-600 ">
+                                            <input
+                                              type="text"
+                                              name="endpointId"
+                                              id="endpointId"
+                                              autoComplete="endpointId"
+                                              placeholder="* obrigatório"
+                                              className="inline flex-1 border-1 border-gray-200 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 placeholder:text-xs focus:ring-0 sm:text-sm sm:leading-6"
+                                              {...register("endpointId", {
+                                                required: true,
+                                              })}
+                                            />
+                                          </div>
+                                          {errors.endpointId && (
+                                            <p className="text-xs mt-2 text-red-400 ">
+                                              {errors.endpointId.message}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
 
-                                  <div>
-                                    <input
-                                      autoComplete="endpointId"
-                                      className="relative block w-full rounded-md h-10 border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-crBlue-200 sm:text-sm sm:leading-6 placeholder:p-2"
-                                      placeholder="Stream Key"
-                                      {...register("endpointId", {
-                                        required: true,
-                                      })}
-                                    />
-                                    {errors.endpointId && (
-                                      <p className="text-xs mt-2 text-red-400 ">
-                                        {errors.endpointId.message}
-                                      </p>
-                                    )}
+                                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                                    <div className="sm:col-span-6">
+                                      <label
+                                        htmlFor="username"
+                                        className="block text-sm font-medium leading-6 text-gray-900"
+                                      >
+                                        URL Servidor
+                                      </label>
+                                      <div className="mt-2">
+                                        <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-gray-600 ">
+                                          <input
+                                            type="text"
+                                            name="urlServidor"
+                                            id="urlServidor"
+                                            autoComplete="urlServidor"
+                                            placeholder="Ex: rtmp://a.rtmp.youtube.com/live2/"
+                                            className="inline flex-1 border-1 border-gray-200 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 placeholder:text-xs focus:ring-0 sm:text-sm sm:leading-6"
+                                            {...register("urlServidor", {
+                                              required: true,
+                                            })}
+                                          />
+                                        </div>
+                                        {errors.urlServidor && (
+                                          <p className="text-xs mt-2 text-red-400 ">
+                                            {errors.urlServidor.message}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                                    <div className="sm:col-span-6">
+                                      <label
+                                        htmlFor="username"
+                                        className="block text-sm font-medium leading-6 text-gray-900"
+                                      >
+                                        Chave da transmissão
+                                      </label>
+                                      <div className="mt-2">
+                                        <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-gray-600 ">
+                                          <input
+                                            type="text"
+                                            name="streamKey"
+                                            id="streamKey"
+                                            autoComplete="streamKey"
+                                            placeholder="* Ex: q9uz-7rde-4r2h-yw34-8q7p"
+                                            className="inline flex-1 border-1 border-gray-200 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 placeholder:text-xs focus:ring-0 sm:text-sm sm:leading-6"
+                                            {...register("streamKey", {
+                                              required: true,
+                                            })}
+                                          />
+                                        </div>
+                                        {errors.streamKey && (
+                                          <p className="text-xs mt-2 text-red-400 ">
+                                            {errors.streamKey.message}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
 
                                   <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
@@ -749,7 +842,7 @@ export default function DetalheTransmissao() {
                         </div>
                       </div>
                       <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                      <button
+                        <button
                           type="button"
                           className="mt-3 inline-flex w-full justify-center rounded-md bg-red-600 text-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-500 sm:mt-0 sm:w-auto"
                           onClick={handleDeleteStream}
@@ -765,7 +858,6 @@ export default function DetalheTransmissao() {
                         >
                           Cancelar
                         </button>
-                        
                       </div>
                     </DialogPanel>
                   </TransitionChild>
